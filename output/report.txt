@@ -1,0 +1,6 @@
+Total rows: 420768
+Stations analyzed: 12
+Dataset start: 2013-03-01
+Dataset end: 2017-02-28
+
+Review output files for details and visual summaries.

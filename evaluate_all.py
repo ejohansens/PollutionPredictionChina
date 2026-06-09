@@ -1,39 +1,73 @@
 from pathlib import Path
 
+import pandas as pd
+
 from air_quality.data import load_all_data
 from air_quality.modeling import (
     summarize_cv_report,
     evaluate_time_holdout,
     plot_cv_and_holdout,
 )
-import pandas as pd
+from air_quality.pipeline import MODELS
 
 
-def main():
+def main() -> None:
+
     workspace_root = Path(__file__).resolve().parent
     data_root = workspace_root / "PRSA_Data_20130301-20170228"
     output_root = workspace_root / "output"
+    benchmark_root = output_root / "benchmark"
 
     print("Loading data...")
     df = load_all_data(data_root)
 
-    report_csv = output_root / "xgboost_walk_forward_results.csv"
-    if report_csv.exists():
-        print(f"Loading CV report from {report_csv}")
-        report_df = pd.read_csv(report_csv, parse_dates=["train_start", "train_end", "val_start", "val_end"])  # type: ignore
-    else:
-        raise FileNotFoundError(f"CV report not found at {report_csv}; run main.py first to generate it.")
+    for model_name in MODELS:
 
-    print("Summarizing CV report...")
-    summarize_cv_report(report_df, output_root)
+        print()
+        print("=" * 60)
+        print(f"Evaluating {model_name.upper()}")
+        print("=" * 60)
 
-    print("Running time-based holdout evaluation (default 365 days)...")
-    holdout_df = evaluate_time_holdout(df, output_root, holdout_days=365)
+        report_csv = benchmark_root / f"{model_name}_walk_forward.csv"
 
-    print("Plotting comparisons...")
-    plot_cv_and_holdout(report_df, holdout_df, output_root)
+        if not report_csv.exists():
+            print(f"Skipping {model_name}: file not found.")
+            continue
 
-    print("All evaluation artifacts saved to:", output_root)
+        report_df = pd.read_csv(
+            report_csv,
+            parse_dates=[
+                "train_start",
+                "train_end",
+                "val_start",
+                "val_end",
+            ],
+        )
+
+        model_output = benchmark_root / model_name
+        model_output.mkdir(parents=True, exist_ok=True)
+
+        print("Summarizing cross-validation results...")
+        summarize_cv_report(report_df, model_output, model_name=model_name)
+
+        print("Running holdout evaluation...")
+        holdout_df = evaluate_time_holdout(
+            df=df,
+            output_root=model_output,
+            holdout_days=365,
+            model_name=model_name,
+        )
+
+        print("Generating plots...")
+        plot_cv_and_holdout(
+            report_df,
+            holdout_df,
+            model_output,
+        )
+
+    print()
+    print("Evaluation completed.")
+    print(f"Artifacts saved to: {benchmark_root}")
 
 
 if __name__ == "__main__":

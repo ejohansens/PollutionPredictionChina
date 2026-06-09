@@ -25,6 +25,7 @@ LAG_HORIZONS = [1, 3, 6, 12]
 ROLLING_WINDOWS = [3, 6, 12]
 FORECAST_HORIZONS = [1, 3, 6, 12, 24]
 TARGET_COLUMN = "PM2.5"
+MODELS = ["xgboost", "lightgbm", "catboost"]
 
 
 def _add_cyclical_time_features(df: pd.DataFrame) -> pd.DataFrame:

@@ -28,12 +28,12 @@ def main() -> None:
     analysis = generate_main_report(df, output_root)
     save_analysis_outputs(df, analysis, output_root)
 
-    print("Running forecasting benchmark (XGBoost, LightGBM, CatBoost)...")
+    print("Running forecasting benchmark (XGBoost, LightGBM, CatBoost, Ridge, ElasticNet, Hybrid, Stacking)...")
 
     results = evaluate_models_walk_forward(
         df=df,
         output_root=output_root / "benchmark",
-        models=["xgboost", "lightgbm", "catboost"],
+        models=["xgboost", "lightgbm", "catboost", "ridge", "elasticnet", "hybrid", "stacking"],
     )
 
     print("Comparing models...")

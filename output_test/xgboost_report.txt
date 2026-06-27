@@ -1,4 +1,0 @@
-XGBoost walk-forward evaluation saved to: c:\Users\johan\AIBProject\output_test\xgboost_walk_forward_results.csv
-Feature importance saved to: c:\Users\johan\AIBProject\output_test\xgboost_feature_importance.csv
-
-Review the walk-forward metrics for MAE and RMSE across forecast horizons.

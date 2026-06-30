@@ -28,3 +28,8 @@ AIB_Project_Report.docx
 conference-template-a4.docx
 AAIB___2026-1.pdf
 ~$*.docx
+
+# User-requested local-only files (keep local, do not track)
+generate_report.py
+README.md
+Milestone 1.pdf

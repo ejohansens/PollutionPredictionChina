@@ -17,7 +17,6 @@ The workflow includes:
 - `air_quality/pipeline.py`: feature engineering, filtering, preprocessing transforms
 - `air_quality/modeling.py`: model builders, walk-forward CV, importance generation, comparison plots
 - `air_quality/analysis.py`: exploratory summaries and visual diagnostics
-- `generate_report.py`: generates Word report (`AIB_Project_Report.docx`) from benchmark outputs
 
 ## Models benchmarked
 
@@ -55,11 +54,7 @@ pip install -r requirements.txt
 python main.py
 ```
 
-6. (Optional) Generate report document:
 
-```powershell
-python generate_report.py
-```
 
 ## Experimental coverage (rubric alignment)
 

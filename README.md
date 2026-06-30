@@ -1,20 +1,38 @@
-# Air Quality Data Analysis Project
+# Short-Term PM2.5 Forecasting (Beijing PRSA)
 
-This project loads the PRSA air quality dataset from multiple station CSV files and performs a clean exploratory analysis in Python.
+This repository contains a full forecasting benchmark for PM2.5 using the PRSA Beijing multi-station dataset.
 
-## What is included
+The workflow includes:
+- data loading and cleaning,
+- horizon-aware feature engineering,
+- two-stage feature selection,
+- walk-forward cross-validation,
+- model comparison across 1h, 3h, 6h, 12h, and 24h horizons,
+- feature importance analysis per model and per horizon.
 
-- `main.py`: entry point for loading data, cleaning, summarizing, and generating reports.
-- `air_quality/data.py`: data loading and cleaning utilities.
-- `air_quality/pipeline.py`: forecasting preprocessing, lagged features, and imputation.
-- `air_quality/modeling.py`: XGBoost training with time-aware walk-forward evaluation.
-- `air_quality/analysis.py`: summary and station-level analysis functions.
-- `requirements.txt`: Python dependencies.
+## Project structure
 
-## How to run
+- `main.py`: end-to-end entry point (analysis + benchmark + summary outputs)
+- `air_quality/data.py`: CSV discovery, cleaning, parsing, and merge logic
+- `air_quality/pipeline.py`: feature engineering, filtering, preprocessing transforms
+- `air_quality/modeling.py`: model builders, walk-forward CV, importance generation, comparison plots
+- `air_quality/analysis.py`: exploratory summaries and visual diagnostics
+- `generate_report.py`: generates Word report (`AIB_Project_Report.docx`) from benchmark outputs
 
-1. Open a terminal in `c:\Users\johan\AIBProject`
-2. Create a virtual environment (recommended):
+## Models benchmarked
+
+- `ridge`
+- `elasticnet`
+- `xgboost`
+- `lightgbm`
+- `catboost`
+- `hybrid` (Ridge + LightGBM residual learner)
+- `stacking` (XGBoost + LightGBM + CatBoost with Ridge meta-learner)
+
+## Reproducibility setup
+
+1. Open terminal in `c:\Users\johan\AIBProject`
+2. Create and activate a virtual environment:
 
 ```powershell
 python -m venv .venv
@@ -27,27 +45,53 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
-4. Run the analysis and XGBoost forecasting workflow:
+4. Ensure dataset folder exists:
+
+`PRSA_Data_20130301-20170228/`
+
+5. Run full pipeline:
 
 ```powershell
 python main.py
 ```
 
-## Output
+6. (Optional) Generate report document:
 
-The script creates an `output/` folder with:
+```powershell
+python generate_report.py
+```
 
-- `summary.csv`
-- `station_summary.csv`
-- `missing_report.csv`
-- `monthly_summary.csv`
-- `xgboost_walk_forward_results.csv`
-- `xgboost_feature_importance.csv`
-- plot images for overall PM2.5 and top stations
-- `report.txt`
-- `xgboost_report.txt`
+## Experimental coverage (rubric alignment)
+
+Different tests were done in both stages.
+
+### DPT / feature engineering tests
+- Horizon-specific lag and rolling-window configurations
+- Wind direction circular encoding (`wd_sin`, `wd_cos`)
+- Domain features (`dew_depression`, `pm_fine_ratio`, `pm10_excess`)
+- Rate-of-change features (`PM2.5_diff{lag}`)
+- Rolling volatility features (`rollstd`)
+- Correlation filter (`|r| >= 0.05`)
+- Collinearity filter (`|r| <= 0.92` retained)
+- Imputation/scaling strategy changes (`SimpleImputer` + `RobustScaler`)
+
+### Model implementation tests
+- Linear baselines: Ridge, ElasticNet
+- Tree ensembles: XGBoost, LightGBM, CatBoost
+- Hybrid model: linear + residual tree learner
+- Stacking ensemble with meta-learner
+- Time-aware walk-forward CV for each horizon
+- Per-horizon feature importance extraction
+
+## Main outputs
+
+Generated runtime artifacts are written to `output/` (ignored by git):
+- `output/benchmark/model_summary.csv`
+- `output/benchmark/*_walk_forward.csv`
+- `output/benchmark/*_importance.csv`
+- `output/benchmark/model_comparison_mae.png`
 
 ## Notes
 
-- This project is intentionally built without a machine-learning pipeline or feature engineering.
-- It focuses on loading the data, cleaning it, and producing useful exploratory summaries.
+- All model evaluations use temporal splits (walk-forward) to avoid leakage.
+- Random seeds are set in model builders where applicable for reproducibility.
